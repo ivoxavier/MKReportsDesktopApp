@@ -1,5 +1,6 @@
 package screens
 
+
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,10 +28,15 @@ import utils.Database
 import java.sql.Connection
 
 data class TableRowData(
-    val column1: String,
-    val column2: String,
-    val column3: String,
-    // ... add more columns as needed
+    val EscadaSucesso_NumConsultora: String,
+    val EscadaSucesso_NomeConsultora: String,
+    val EscadaSucesso_NivelCarreira: String,
+    val EscadaSucesso_TotalNovasConsultoras: String,
+    val EscadaSucesso_TotalNovasConsultorasQualificadas: String,
+    val EscadaSucesso_TotalPrograma: String,
+    val EscadaSucesso_NivelConseguido: String,
+    val EscadaSucesso_PrecisaParaNivelSeguinte: String,
+    val EscadaSucesso_Trimestre: String
 )
 
 @Composable
@@ -41,8 +47,9 @@ fun LadderOfSucess() {
     val tableData = remember { mutableStateListOf<TableRowData>() }
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) } // Loading indicator state
+    val columnWidths = listOf(150.dp, 150.dp, 200.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp)
 
-    // Function to fetch data (now only called on button click)
+
     fun fetchDataFromDatabase() {
         isLoading = true
         coroutineScope.launch(Dispatchers.IO) {
@@ -50,18 +57,29 @@ fun LadderOfSucess() {
             try {
                 connection = Database.getConnection()
                 if (connection != null) {
-                    var query = "SELECT EscadaSucesso_NumConsultora, EscadaSucesso_NomeConsultora,EscadaSucesso_NivelCarreira FROM TB_EscadaSucesso"  // Your base query
+                    var query =
+                            """ SELECT EscadaSucesso_NumConsultora,
+                            EscadaSucesso_NomeConsultora,
+                            EscadaSucesso_NivelCarreira,
+                            EscadaSucesso_TotalNovasConsultoras,
+                            EscadaSucesso_TotalNovasConsultorasQualificadas,
+                            EscadaSucesso_TotalPrograma,
+                            EscadaSucesso_NivelConseguido,
+                            EscadaSucesso_PrecisaParaNivelSeguinte,
+                            EscadaSucesso_Trimestre 
+                            FROM TB_EscadaSucesso
+                            """.trimIndent()
                     val conditions = mutableListOf<String>()
 
                     if (consultantNumber.isNotBlank()) {
-                        conditions.add("consultant_number = '$consultantNumber'") // DANGEROUS!
+                        conditions.add("consultant_number = '$consultantNumber'")
                     }
                     if (selectedSemester != "all") {
-                        conditions.add("semester = '$selectedSemester'")        // DANGEROUS!
+                        conditions.add("semester = '$selectedSemester'")
                     }
                     if (selectedType != "Todos") {
                         val type = if (selectedType == "DIQ") "DIQ_TYPE" else "EQUIPA_TYPE"
-                        conditions.add("type = '$type'")                     // DANGEROUS!
+                        conditions.add("type = '$type'")
                     }
 
                     if (conditions.isNotEmpty()) {
@@ -74,9 +92,15 @@ fun LadderOfSucess() {
                     val newData = mutableListOf<TableRowData>()
                     while (resultSet.next()) {
                         val row = TableRowData(
-                            resultSet.getString("EscadaSucesso_NumConsultora") ?: "",  // Use Elvis operator
-                            resultSet.getString("EscadaSucesso_NomeConsultora") ?: "", // Use Elvis operator
-                            resultSet.getString("EscadaSucesso_NivelCarreira") ?: ""  // Use Elvis operator
+                            resultSet.getString("EscadaSucesso_NumConsultora") ?: "",
+                            resultSet.getString("EscadaSucesso_NomeConsultora") ?: "",
+                            resultSet.getString("EscadaSucesso_NivelCarreira") ?: "",
+                            resultSet.getString("EscadaSucesso_TotalNovasConsultoras") ?: "",
+                            resultSet.getString("EscadaSucesso_TotalNovasConsultorasQualificadas") ?: "",
+                            resultSet.getString("EscadaSucesso_TotalPrograma") ?: "",
+                            resultSet.getString("EscadaSucesso_NivelConseguido") ?: "",
+                            resultSet.getString("EscadaSucesso_PrecisaParaNivelSeguinte") ?: "",
+                            resultSet.getString("EscadaSucesso_Trimestre") ?: "",
                         )
                         newData.add(row)
                     }
@@ -100,14 +124,14 @@ fun LadderOfSucess() {
     }
 
 
-    Column(modifier = Modifier.fillMaxSize()) { // Use fillMaxSize()
+    Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = { fetchDataFromDatabase() }) { // Call fetchDataFromDatabase on button click
+            Button(onClick = { fetchDataFromDatabase() }, modifier = Modifier.padding(8.dp)) { // Call fetchDataFromDatabase on button click
                 Text("Atualizar")
             }
         }
@@ -118,15 +142,14 @@ fun LadderOfSucess() {
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            Text(MKReportsConstants.TEXT_FIELDS.CONSULTANT_NUMBER)
-
+            Text(MKReportsConstants.TEXT_FIELDS.CONSULTANT_NUMBER+":")
             TextField(
                 value = consultantNumber,
                 onValueChange = { consultantNumber = it },
                 modifier = Modifier
                     .width(174.dp)
-                    .height(40.dp)
+                    .height(50.dp)
+                    .padding(8.dp)
             )
         }
         BlankVerticalSpace()
@@ -162,6 +185,24 @@ fun LadderOfSucess() {
 
         BlankVerticalSpace()
 
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+            //.border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+        ) {
+            TableCell(text = "Número", weight = columnWidths[0], isHeader = true)
+            TableCell(text = "Nome", weight = columnWidths[1], isHeader = true)
+            TableCell(text = "Nível", weight = columnWidths[2], isHeader = true)
+            TableCell(text = "Total Novas Consultoras", weight = columnWidths[3], isHeader = true)
+            TableCell(text = "Total Novas Consultoras Qualificadas", weight = columnWidths[4], isHeader = true)
+            TableCell(text = "Total Programa", weight = columnWidths[5], isHeader = true)
+            TableCell(text = "Nível Conseguido", weight = columnWidths[6], isHeader = true)
+            TableCell(text = "Em falta para próximo Nível", weight = columnWidths[7], isHeader = true)
+            TableCell(text = "Trimestre", weight = columnWidths[8], isHeader = true)
+        }
+
         // Use a Box to allow the DataTable to take up remaining space
         Box(modifier = Modifier.weight(1f)) {
             if (isLoading) {
@@ -174,7 +215,10 @@ fun LadderOfSucess() {
 
         Row(modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))){
+            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
+            .padding(8.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically){
             Button(onClick = {}){
                 Text("ExportData")
             }
@@ -223,17 +267,9 @@ fun TypeRadioButton(type: String, selectedType: String, onTypeSelected: () -> Un
 
 @Composable
 fun DataTable(data: List<TableRowData>) {
-    val columnWidths = listOf(150.dp, 150.dp, 200.dp)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-        //.border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-    ) {
-        TableCell(text = "Column 1", weight = columnWidths[0], isHeader = true)
-        TableCell(text = "Column 2", weight = columnWidths[1], isHeader = true)
-        TableCell(text = "Column 3", weight = columnWidths[2], isHeader = true)
-    }
+    val columnWidths = listOf(
+        150.dp, 150.dp, 200.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp
+    )
 
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
         items(data) { rowData ->
@@ -243,9 +279,16 @@ fun DataTable(data: List<TableRowData>) {
                     .padding(8.dp)
                 // .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
             ) {
-                TableCell(text = rowData.column1, weight = columnWidths[0])
-                TableCell(text = rowData.column2, weight = columnWidths[1])
-                TableCell(text = rowData.column3, weight = columnWidths[2])
+                TableCell(text = rowData.EscadaSucesso_NumConsultora, weight = columnWidths[0])
+                TableCell(text = rowData.EscadaSucesso_NomeConsultora, weight = columnWidths[1])
+                TableCell(text = rowData.EscadaSucesso_NivelCarreira, weight = columnWidths[2])
+                TableCell(text = rowData.EscadaSucesso_TotalNovasConsultoras, weight = columnWidths[3])
+                TableCell(text = rowData.EscadaSucesso_TotalNovasConsultorasQualificadas, weight = columnWidths[4])
+                TableCell(text = rowData.EscadaSucesso_TotalPrograma, weight = columnWidths[5])
+                TableCell(text = rowData.EscadaSucesso_NivelConseguido, weight = columnWidths[6])
+                TableCell(text = rowData.EscadaSucesso_PrecisaParaNivelSeguinte, weight = columnWidths[7])
+                TableCell(text = rowData.EscadaSucesso_Trimestre, weight = columnWidths[8])
+
             }
         }
     }
