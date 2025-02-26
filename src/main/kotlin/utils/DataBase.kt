@@ -5,9 +5,9 @@ import java.sql.Connection
 import java.sql.DriverManager
 
 object Database {
-    private const val DB_URL = "jdbc:mysql://localhost:3306/MARYKAY_REPORTS"  // Replace with your details
-    private const val DB_USER = "root"     // Replace with your username
-    private const val DB_PASSWORD = "Qwerty123456" // Replace with your password
+    private const val DB_URL = "jdbc:mysql://localhost:3306/MARYKAY_REPORTS"
+    private const val DB_USER = "root"
+    private const val DB_PASSWORD = "Qwerty123456"
 
     fun getConnection(): Connection? {
         return try {

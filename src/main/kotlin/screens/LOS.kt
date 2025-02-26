@@ -1,6 +1,5 @@
 package screens
 
-
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,8 +23,13 @@ import constants.MKReportsConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import utils.Database
+import java.io.File
+import java.io.FileOutputStream
 import java.sql.Connection
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
 data class TableRowData(
     val EscadaSucesso_NumConsultora: String,
@@ -42,11 +46,11 @@ data class TableRowData(
 @Composable
 fun LadderOfSucess() {
     var consultantNumber by remember { mutableStateOf("") }
-    var selectedSemester by remember { mutableStateOf("all") } // "all", "1", "2", "3", "4"
-    var selectedType by remember { mutableStateOf("Todos") }   // "DIQ", "Equipa", "Todos"
+    var selectedSemester by remember { mutableStateOf("all") }
+    var selectedType by remember { mutableStateOf("Todos") }
     val tableData = remember { mutableStateListOf<TableRowData>() }
     val coroutineScope = rememberCoroutineScope()
-    var isLoading by remember { mutableStateOf(false) } // Loading indicator state
+    var isLoading by remember { mutableStateOf(false) }
     val columnWidths = listOf(150.dp, 150.dp, 200.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp)
 
 
@@ -58,7 +62,7 @@ fun LadderOfSucess() {
                 connection = Database.getConnection()
                 if (connection != null) {
                     var query =
-                            """ SELECT EscadaSucesso_NumConsultora,
+                        """ SELECT EscadaSucesso_NumConsultora,
                             EscadaSucesso_NomeConsultora,
                             EscadaSucesso_NivelCarreira,
                             EscadaSucesso_TotalNovasConsultoras,
@@ -113,11 +117,71 @@ fun LadderOfSucess() {
                     }
                 }
             } catch (e: Exception) {
-                e.printStackTrace() // Log or display the error
+                e.printStackTrace()
             } finally {
                 connection?.close()
                 withContext(Dispatchers.Main) {
                     isLoading = false
+                }
+            }
+        }
+    }
+
+    fun exportDataToExcel() {
+        coroutineScope.launch(Dispatchers.IO) {
+            val fileChooser = JFileChooser().apply {
+                dialogTitle = "Selecione onde guardar o arquivo"
+                fileFilter = FileNameExtensionFilter("Arquivos Excel (*.xlsx)", "xlsx")
+                isAcceptAllFileFilterUsed = false
+            }
+
+            val userSelection = fileChooser.showSaveDialog(null)
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                var fileToSave = fileChooser.selectedFile
+                if (!fileToSave.name.lowercase().endsWith(".xlsx")) {
+                    fileToSave = File(fileToSave.parentFile, fileToSave.name + ".xlsx")
+                }
+
+
+                try {
+                    XSSFWorkbook().use { workbook ->
+                        val sheet = workbook.createSheet("EscadaSucesso")
+
+
+                        val headerRow = sheet.createRow(0)
+                        val headerTitles = listOf(
+                            "Número", "Nome", "Nível", "Total Novas Consultoras",
+                            "Total Novas Consultoras Qualificadas", "Total Programa",
+                            "Nível Conseguido", "Em falta para próximo Nível", "Trimestre"
+                        )
+                        headerTitles.forEachIndexed { index, title ->
+                            headerRow.createCell(index).setCellValue(title)
+                        }
+
+
+                        tableData.forEachIndexed { rowIndex, rowData ->
+                            val row = sheet.createRow(rowIndex + 1)
+                            row.createCell(0).setCellValue(rowData.EscadaSucesso_NumConsultora)
+                            row.createCell(1).setCellValue(rowData.EscadaSucesso_NomeConsultora)
+                            row.createCell(2).setCellValue(rowData.EscadaSucesso_NivelCarreira)
+                            row.createCell(3).setCellValue(rowData.EscadaSucesso_TotalNovasConsultoras)
+                            row.createCell(4).setCellValue(rowData.EscadaSucesso_TotalNovasConsultorasQualificadas)
+                            row.createCell(5).setCellValue(rowData.EscadaSucesso_TotalPrograma)
+                            row.createCell(6).setCellValue(rowData.EscadaSucesso_NivelConseguido)
+                            row.createCell(7).setCellValue(rowData.EscadaSucesso_PrecisaParaNivelSeguinte)
+                            row.createCell(8).setCellValue(rowData.EscadaSucesso_Trimestre)
+                        }
+
+                        // Write to the file *inside* the workbook's use block
+                        FileOutputStream(fileToSave).use { outputStream ->
+                            workbook.write(outputStream)
+                        }
+                    }
+                    println("File saved successfully!")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    println("Failed to save file!")
                 }
             }
         }
@@ -131,7 +195,7 @@ fun LadderOfSucess() {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = { fetchDataFromDatabase() }, modifier = Modifier.padding(8.dp)) { // Call fetchDataFromDatabase on button click
+            Button(onClick = { fetchDataFromDatabase() }, modifier = Modifier.padding(8.dp)) {
                 Text("Atualizar")
             }
         }
@@ -203,7 +267,7 @@ fun LadderOfSucess() {
             TableCell(text = "Trimestre", weight = columnWidths[8], isHeader = true)
         }
 
-        // Use a Box to allow the DataTable to take up remaining space
+
         Box(modifier = Modifier.weight(1f)) {
             if (isLoading) {
                 Text("Loading...")
@@ -219,7 +283,7 @@ fun LadderOfSucess() {
             .padding(8.dp),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically){
-            Button(onClick = {}){
+            Button(onClick = { exportDataToExcel() }){
                 Text("ExportData")
             }
         }
@@ -238,7 +302,7 @@ fun SemesterRadioButton(semester: String, selectedSemester: String, onSemesterSe
             selected = (semester == selectedSemester),
             onClick = onSemesterSelected,
             colors = RadioButtonDefaults.colors(
-                selectedColor = Color.Blue, // Customize colors as needed
+                selectedColor = Color.Blue,
                 unselectedColor = Color.Gray
             )
         )

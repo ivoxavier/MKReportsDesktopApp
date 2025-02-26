@@ -24,6 +24,7 @@ dependencies {
     //implementation("androidx.compose.ui:ui-android:1.7.8")
     implementation("mysql:mysql-connector-java:8.0.33")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
 }
 
 compose.desktop {
