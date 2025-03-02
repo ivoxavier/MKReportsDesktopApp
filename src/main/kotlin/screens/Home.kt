@@ -1,6 +1,7 @@
 package screens
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import components.HomeButtonOption
 import constants.MKReportsConstants
-import mappers.Screen
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.unit.DpSize
@@ -34,14 +34,15 @@ fun HomeScreen() {
     var windowSize by remember { mutableStateOf(DpSize(1400.dp, 1100.dp)) }
 
     val buttonTitles = listOf(
-        MKReportsConstants.MAIN_GRID_BUTTONS.LADDER_OF_SUCESS_REPORT,
+        MKReportsConstants.BUTTONS.LADDER_OF_SUCESS_REPORT,
          "Relatório 2", "Configurações",
         "Opçao1",
         "Opção 7", "Opção 8", "Opção 9"
     )
 
 
-    Row(modifier = Modifier.fillMaxWidth(),
+    Row(modifier = Modifier.fillMaxWidth()
+        .background(MKReportsConstants.APP.COLORS.MARYKAY_PINK),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically) {
         Text(text=currentDate, fontWeight = FontWeight.Bold)
@@ -51,12 +52,13 @@ fun HomeScreen() {
         columns = GridCells.Fixed(3), // 3 coluns fixed
         contentPadding = PaddingValues(40.dp), // grid padding
         horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(40.dp)
+        verticalArrangement = Arrangement.spacedBy(40.dp),
+        modifier = Modifier.background(MKReportsConstants.APP.COLORS.MARYKAY_PINK)
     ) {
         items(buttonTitles) { title ->
              HomeButtonOption(title, onClick = {
                  when(title){
-                     MKReportsConstants.MAIN_GRID_BUTTONS.LADDER_OF_SUCESS_REPORT -> {
+                     MKReportsConstants.BUTTONS.LADDER_OF_SUCESS_REPORT -> {
                          newWindowTitle = "Ladder of Success"
                          showNewWindow = true
                      }

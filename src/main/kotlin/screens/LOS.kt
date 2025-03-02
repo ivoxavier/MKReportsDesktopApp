@@ -47,7 +47,7 @@ data class TableRowData(
 fun LadderOfSucess() {
     var consultantNumber by remember { mutableStateOf("") }
     var selectedSemester by remember { mutableStateOf("all") }
-    var selectedType by remember { mutableStateOf("Todos") }
+    /*var selectedType by remember { mutableStateOf("Todos") }*/
     val tableData = remember { mutableStateListOf<TableRowData>() }
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
@@ -62,29 +62,29 @@ fun LadderOfSucess() {
                 connection = Database.getConnection()
                 if (connection != null) {
                     var query =
-                        """ SELECT EscadaSucesso_NumConsultora,
-                            EscadaSucesso_NomeConsultora,
-                            EscadaSucesso_NivelCarreira,
-                            EscadaSucesso_TotalNovasConsultoras,
-                            EscadaSucesso_TotalNovasConsultorasQualificadas,
-                            EscadaSucesso_TotalPrograma,
-                            EscadaSucesso_NivelConseguido,
-                            EscadaSucesso_PrecisaParaNivelSeguinte,
-                            EscadaSucesso_Trimestre 
-                            FROM TB_EscadaSucesso
+                        """ SELECT los.EscadaSucesso_NumConsultora,
+                            los.EscadaSucesso_NomeConsultora,
+                            los.EscadaSucesso_NivelCarreira,
+                            los.EscadaSucesso_TotalNovasConsultoras,
+                            los.EscadaSucesso_TotalNovasConsultorasQualificadas,
+                            los.EscadaSucesso_TotalPrograma,
+                            los.EscadaSucesso_NivelConseguido,
+                            los.EscadaSucesso_PrecisaParaNivelSeguinte,
+                            los.EscadaSucesso_Trimestre 
+                            FROM TB_EscadaSucesso los
                             """.trimIndent()
                     val conditions = mutableListOf<String>()
 
                     if (consultantNumber.isNotBlank()) {
-                        conditions.add("consultant_number = '$consultantNumber'")
+                        conditions.add("los.EscadaSucesso_NumConsultora = '$consultantNumber'")
                     }
                     if (selectedSemester != "all") {
-                        conditions.add("semester = '$selectedSemester'")
+                        conditions.add("los.EscadaSucesso_Trimestre = '$selectedSemester'")
                     }
-                    if (selectedType != "Todos") {
+                    /*if (selectedType != "Todos") {
                         val type = if (selectedType == "DIQ") "DIQ_TYPE" else "EQUIPA_TYPE"
                         conditions.add("type = '$type'")
-                    }
+                    }*/
 
                     if (conditions.isNotEmpty()) {
                         query += " WHERE " + conditions.joinToString(" AND ")
@@ -151,9 +151,15 @@ fun LadderOfSucess() {
 
                         val headerRow = sheet.createRow(0)
                         val headerTitles = listOf(
-                            "Número", "Nome", "Nível", "Total Novas Consultoras",
-                            "Total Novas Consultoras Qualificadas", "Total Programa",
-                            "Nível Conseguido", "Em falta para próximo Nível", "Trimestre"
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NumConsultora,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NomeConsultora,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NivelCarreira,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_TotalNovasConsultoras,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_TotalNovasConsultorasQualificadas,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_TotalPrograma,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NivelConseguido,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_PrecisaParaNivelSeguinte,
+                            MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_Trimestre
                         )
                         headerTitles.forEachIndexed { index, title ->
                             headerRow.createCell(index).setCellValue(title)
@@ -189,15 +195,24 @@ fun LadderOfSucess() {
 
 
     Column(modifier = Modifier.fillMaxSize()) {
+        Row(modifier=Modifier
+            .fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+            ){
+            Button(onClick = { fetchDataFromDatabase() }, modifier = Modifier.padding(8.dp)) {
+                Text(MKReportsConstants.BUTTONS.UPDATE)
+            }
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = { fetchDataFromDatabase() }, modifier = Modifier.padding(8.dp)) {
-                Text("Atualizar")
-            }
+            Text(MKReportsConstants.REPORTS.LADDER_OF_SUCCESS,
+                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp)
         }
 
         Row(
@@ -212,7 +227,7 @@ fun LadderOfSucess() {
                 onValueChange = { consultantNumber = it },
                 modifier = Modifier
                     .width(174.dp)
-                    .height(50.dp)
+                    .height(70.dp)
                     .padding(8.dp)
             )
         }
@@ -225,14 +240,14 @@ fun LadderOfSucess() {
         ) {
             Text("Semestres: ")
             // Wrap each RadioButton and Text in a Row for better alignment
-            SemesterRadioButton("1", selectedSemester) { selectedSemester = "1" }
-            SemesterRadioButton("2", selectedSemester) { selectedSemester = "2" }
-            SemesterRadioButton("3", selectedSemester) { selectedSemester = "3" }
-            SemesterRadioButton("4", selectedSemester) { selectedSemester = "4" }
+            SemesterRadioButton("1_Trimestre", selectedSemester) { selectedSemester = "1_Trimestre" }
+            SemesterRadioButton("2_Trimestre", selectedSemester) { selectedSemester = "2_Trimestre" }
+            SemesterRadioButton("3_Trimestre", selectedSemester) { selectedSemester = "3_Trimestre" }
+            SemesterRadioButton("4_Trimestre", selectedSemester) { selectedSemester = "4_Trimestre" }
             SemesterRadioButton("all", selectedSemester) { selectedSemester = "all" }
         }
 
-        BlankVerticalSpace()
+        /*BlankVerticalSpace()
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -245,7 +260,7 @@ fun LadderOfSucess() {
             TypeRadioButton("DIQ", selectedType) { selectedType = "DIQ" }
             TypeRadioButton("Equipa", selectedType) { selectedType = "Equipa" }
             TypeRadioButton("Todos", selectedType) { selectedType = "Todos" }
-        }
+        }*/
 
         BlankVerticalSpace()
 
@@ -256,21 +271,21 @@ fun LadderOfSucess() {
                 .padding(8.dp)
             //.border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
         ) {
-            TableCell(text = "Número", weight = columnWidths[0], isHeader = true)
-            TableCell(text = "Nome", weight = columnWidths[1], isHeader = true)
-            TableCell(text = "Nível", weight = columnWidths[2], isHeader = true)
-            TableCell(text = "Total Novas Consultoras", weight = columnWidths[3], isHeader = true)
-            TableCell(text = "Total Novas Consultoras Qualificadas", weight = columnWidths[4], isHeader = true)
-            TableCell(text = "Total Programa", weight = columnWidths[5], isHeader = true)
-            TableCell(text = "Nível Conseguido", weight = columnWidths[6], isHeader = true)
-            TableCell(text = "Em falta para próximo Nível", weight = columnWidths[7], isHeader = true)
-            TableCell(text = "Trimestre", weight = columnWidths[8], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NumConsultora, weight = columnWidths[0], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NomeConsultora, weight = columnWidths[1], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NivelCarreira, weight = columnWidths[2], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_TotalNovasConsultoras, weight = columnWidths[3], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_TotalNovasConsultorasQualificadas, weight = columnWidths[4], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_TotalPrograma, weight = columnWidths[5], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_NivelConseguido, weight = columnWidths[6], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_PrecisaParaNivelSeguinte, weight = columnWidths[7], isHeader = true)
+            TableCell(text = MKReportsConstants.TABLE.ESCADA_SUCESSO.COLUMNS.EscadaSucesso_Trimestre, weight = columnWidths[8], isHeader = true)
         }
 
 
         Box(modifier = Modifier.weight(1f)) {
             if (isLoading) {
-                Text("Loading...")
+                Text(MKReportsConstants.APP.LOADING_LABEL)
             } else {
                 DataTable(data = tableData)
             }
@@ -284,7 +299,7 @@ fun LadderOfSucess() {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically){
             Button(onClick = { exportDataToExcel() }){
-                Text("ExportData")
+                Text(MKReportsConstants.BUTTONS.EXPORT_DATA)
             }
         }
     }
@@ -306,11 +321,11 @@ fun SemesterRadioButton(semester: String, selectedSemester: String, onSemesterSe
                 unselectedColor = Color.Gray
             )
         )
-        Text(text = if (semester == "all") "Todos" else "Semestre $semester")
+        Text(text = if (semester == "all") "Todos" else "$semester")
     }
 }
 
-@Composable
+/*@Composable
 fun TypeRadioButton(type: String, selectedType: String, onTypeSelected: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -326,7 +341,7 @@ fun TypeRadioButton(type: String, selectedType: String, onTypeSelected: () -> Un
         )
         Text(text = type)
     }
-}
+}*/
 
 
 @Composable

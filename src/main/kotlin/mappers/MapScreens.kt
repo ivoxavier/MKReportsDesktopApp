@@ -1,7 +1,7 @@
 package mappers
 
 sealed class Screen {
-    object Home : Screen() // Tela inicial
+    object Home : Screen()
     object LadderOfSuccess : Screen()
     object Report2 : Screen()
     object Settings : Screen()
