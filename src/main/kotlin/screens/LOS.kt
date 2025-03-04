@@ -31,7 +31,7 @@ import java.sql.Connection
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
-data class TableRowData(
+data class LosRowData(
     val EscadaSucesso_NumConsultora: String,
     val EscadaSucesso_NomeConsultora: String,
     val EscadaSucesso_NivelCarreira: String,
@@ -48,7 +48,7 @@ fun LadderOfSucess() {
     var consultantNumber by remember { mutableStateOf("") }
     var selectedSemester by remember { mutableStateOf("all") }
     /*var selectedType by remember { mutableStateOf("Todos") }*/
-    val tableData = remember { mutableStateListOf<TableRowData>() }
+    val tableData = remember { mutableStateListOf<LosRowData>() }
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
     val columnWidths = listOf(150.dp, 150.dp, 200.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp)
@@ -93,9 +93,9 @@ fun LadderOfSucess() {
                     val statement = connection.createStatement()
                     val resultSet = statement.executeQuery(query)
 
-                    val newData = mutableListOf<TableRowData>()
+                    val newData = mutableListOf<LosRowData>()
                     while (resultSet.next()) {
-                        val row = TableRowData(
+                        val row = LosRowData(
                             resultSet.getString("EscadaSucesso_NumConsultora") ?: "",
                             resultSet.getString("EscadaSucesso_NomeConsultora") ?: "",
                             resultSet.getString("EscadaSucesso_NivelCarreira") ?: "",
@@ -345,7 +345,7 @@ fun TypeRadioButton(type: String, selectedType: String, onTypeSelected: () -> Un
 
 
 @Composable
-fun DataTable(data: List<TableRowData>) {
+fun DataTable(data: List<LosRowData>) {
     val columnWidths = listOf(
         150.dp, 150.dp, 200.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp, 150.dp
     )

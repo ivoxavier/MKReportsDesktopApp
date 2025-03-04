@@ -13,9 +13,12 @@ class MKReportsConstants private constructor() {
 
     object REPORTS{
         const val LADDER_OF_SUCCESS = "Escada de Sucesso"
+        const val MONTH_SALES = "Vendas Mensal"
     }
 
     object BUTTONS{
+        const val PROGRAMS = "Programas"
+        const val MONTH_SALES = "Vendas Mensal"
         const val LADDER_OF_SUCESS_REPORT = "Escada de Sucesso"
         const val ABOUT = "Sobre"
         const val UPDATE = "Atualizar"
