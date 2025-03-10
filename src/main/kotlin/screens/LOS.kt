@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import components.BlankVerticalSpace
+import components.TableCell
 import constants.MKReportsConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -231,7 +232,7 @@ fun LadderOfSucess() {
                     .padding(8.dp)
             )
         }
-        BlankVerticalSpace()
+       // BlankVerticalSpace()
         Row(
             modifier = Modifier.fillMaxWidth(),
             // .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
@@ -373,14 +374,3 @@ fun DataTable(data: List<LosRowData>) {
     }
 }
 
-@Composable
-fun TableCell(text: String, weight: Dp, isHeader: Boolean = false) {
-    Text(
-        text = text,
-        modifier = Modifier
-            .width(weight)
-            .padding(8.dp),
-        fontWeight = if (isHeader) FontWeight.Bold else FontWeight.Normal,
-        fontSize = if (isHeader) 18.sp else 14.sp
-    )
-}

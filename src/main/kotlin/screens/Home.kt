@@ -73,7 +73,7 @@ fun HomeScreen() {
                 val buttonTitles = listOf(
                     MKReportsConstants.BUTTONS.MONTH_SALES,
                     MKReportsConstants.BUTTONS.PROGRAMS,
-                    "Relatório 2", "Configurações",
+                    MKReportsConstants.BUTTONS.TEAM_STATUS, "Configurações",
                     "Opçao1",
                     "Opção 7", "Opção 8", "Opção 9"
                 )
@@ -142,7 +142,7 @@ fun ProgramsScreen() {
     Column {
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2), // Pode ajustar o número de colunas
+            columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(20.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),

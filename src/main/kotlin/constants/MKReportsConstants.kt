@@ -23,6 +23,7 @@ class MKReportsConstants private constructor() {
         const val ABOUT = "Sobre"
         const val UPDATE = "Atualizar"
         const val EXPORT_DATA = "Exportar"
+        const val TEAM_STATUS = "Estado Equipa"
     }
 
     object TEXT_FIELDS{
@@ -44,6 +45,14 @@ class MKReportsConstants private constructor() {
                 const val EscadaSucesso_Trimestre = "Trimestre"
                 const val EscadaSucesso_DataExtracao = "DataExtracao"
             }
+        }
+        object MONTHLY_SALES{
+            const val CONSULTORA = "Consultora"
+            const val NOME = "Nome"
+            const val MESVENDA = "MesVenda"
+            const val TOTALVENDA_PVP = "TotalVenda_PVP"
+            const val TOTALVENDA_LIQUIDO = "TotalVenda_Liquido"
+            const val RECRUTADORA = "Recrutadora"
         }
     }
 }
