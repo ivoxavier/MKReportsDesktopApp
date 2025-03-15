@@ -38,17 +38,19 @@ data class MonthSalesRowData(
     val MesVenda: String,
     val ValorVenda_PVP: String,
     val ValorVenda_Liquido: String,
-    val Recrutadora: String
+    val Recrutadora: String,
+    val RecrutadoraNum: String,
 )
 
 @Composable
 fun MonthSales() {
     var consultantNumber by remember { mutableStateOf("") }
     var mesVendas by remember { mutableStateOf("") }
+    var recruiter by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
     val tableData = remember { mutableStateListOf<MonthSalesRowData>() }
-    val columnWidths = listOf(150.dp, 200.dp, 150.dp, 150.dp, 150.dp, 200.dp)
+    val columnWidths = listOf(200.dp, 200.dp, 200.dp, 200.dp, 200.dp, 200.dp, 200.dp)
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
     var totalGeralPVP by remember { mutableStateOf(0.0) }
     var totalGeralLiquido by remember { mutableStateOf(0.0) }
@@ -69,14 +71,18 @@ fun MonthSales() {
                                 t1.MesVenda,
                                 t1.ValorVenda,
                                 t3.RecrutadoraNum AS Recrutadora,
+                                t4.RecrutadoraNum AS RecrutadoraNum,
                                 ROW_NUMBER() OVER (PARTITION BY t1.Consultora, t1.MesVenda ORDER BY t1.ExtractionDate DESC) as rn
                             FROM
                                 MARYKAY_REPORTS.TB_Month_Sales_Sales t1
                             INNER JOIN
-                                MARYKAY_REPORTS.TB_Month_Sales_Consultant t3 ON t3.ConsultantNumber = t1.Consultora
-                            WHERE 1=1
-                                AND (t1.Consultora = ? OR ? IS NULL)
-                                AND (t1.MesVenda = ? OR ? IS NULL)
+                                MARYKAY_REPORTS.TB_Month_Sales_Consultant t3 ON t1.Consultora = t3.ConsultantNumber
+                            INNER JOIN
+                                MARYKAY_REPORTS.TB_Consultoras t4 ON t3.RecrutadoraNum = t4.ConsultoraRecrutadoraNome
+                            WHERE 1=1  
+                              AND (t1.Consultora = ? OR ? IS NULL)
+                              AND (t1.MesVenda = ? OR ? IS NULL)
+                              AND (t4.RecrutadoraNum = ? OR ? IS NULL)
                         )
                         SELECT
                             Consultora,
@@ -136,20 +142,13 @@ fun MonthSales() {
                             CASE
                                 WHEN ValorVenda >= 160 AND ValorVenda <= 579 THEN ROUND((ValorVenda - (ValorVenda * 0.40)) / 1.23, 2)
                                 WHEN ValorVenda >= 580 THEN ROUND((ValorVenda - (ValorVenda * 0.50)) / 1.23, 2)
-                                ELSE ROUND(ValorVenda / 1.23, 2) 
-                                END AS TotalVenda_Liquido,
-                            Recrutadora
-                        FROM
-                            RankedSales
-                        WHERE
-                            rn = 1
-                      --  GROUP BY
-                      --      Consultora,
-                      --      Nome,
-                      --      MesVenda,
-                      --      Recrutadora
-                        ORDER BY
-                            MesVenda;
+                                ELSE ROUND(ValorVenda / 1.23, 2)
+                            END AS TotalVenda_Liquido,
+                            Recrutadora,
+                            RecrutadoraNum
+                        FROM RankedSales
+                        WHERE rn = 1
+                        ORDER BY MesVenda;
                     """
                     val statement = connection.prepareStatement(query)
 
@@ -169,6 +168,14 @@ fun MonthSales() {
                         statement.setNull(4, Types.VARCHAR)
                     }
 
+                    if(recruiter.isNotBlank()){
+                        statement.setString(5,recruiter)
+                        statement.setString(6,recruiter)
+                    } else {
+                        statement.setNull(5, Types.VARCHAR)
+                        statement.setNull(6, Types.VARCHAR)
+                    }
+
 
                     val resultSet = statement.executeQuery()
 
@@ -181,7 +188,8 @@ fun MonthSales() {
                             resultSet.getString("MesVenda") ?: "",
                             resultSet.getString("TotalVenda_PVP") ?: "",
                             resultSet.getString("TotalVenda_Liquido") ?: "",
-                            resultSet.getString("Recrutadora") ?: ""
+                            resultSet.getString("Recrutadora") ?: "",
+                            resultSet.getString("RecrutadoraNum") ?: "",
                         )
                         newData.add(row)
                     }
@@ -239,7 +247,8 @@ fun MonthSales() {
                             MKReportsConstants.TABLE.MONTHLY_SALES.MESVENDA,
                             MKReportsConstants.TABLE.MONTHLY_SALES.TOTALVENDA_PVP,
                             MKReportsConstants.TABLE.MONTHLY_SALES.TOTALVENDA_LIQUIDO,
-                            MKReportsConstants.TABLE.MONTHLY_SALES.RECRUTADORA
+                            MKReportsConstants.TABLE.MONTHLY_SALES.RECRUTADORA,
+                            MKReportsConstants.TABLE.MONTHLY_SALES.RECRUTADORANUM
                         )
                         headerTitles.forEachIndexed { index, title ->
                             headerRow.createCell(index).setCellValue(title)
@@ -253,6 +262,7 @@ fun MonthSales() {
                             row.createCell(3).setCellValue(rowData.ValorVenda_PVP)
                             row.createCell(4).setCellValue(rowData.ValorVenda_Liquido)
                             row.createCell(5).setCellValue(rowData.Recrutadora)
+                            row.createCell(6).setCellValue(rowData.RecrutadoraNum)
                         }
 
                         FileOutputStream(fileToSave).use { outputStream ->
@@ -289,7 +299,8 @@ fun MonthSales() {
                 fontWeight = FontWeight.Bold,
                 fontSize = 30.sp
             )
-        }
+        }//Screen name
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
@@ -313,7 +324,16 @@ fun MonthSales() {
                     .height(70.dp)
                     .padding(8.dp)
             )
-        }
+            Text("Recrutadora:")
+            TextField(
+                value = recruiter,
+                onValueChange = { recruiter = it },
+                modifier = Modifier
+                    .width(174.dp)
+                    .height(70.dp)
+                    .padding(8.dp)
+            )
+        }// Filters Row
 
         Row(
             modifier = Modifier
@@ -350,7 +370,12 @@ fun MonthSales() {
                 weight = columnWidths[5],
                 isHeader = true
             )
-        }
+            TableCell(
+                text = MKReportsConstants.TABLE.MONTHLY_SALES.RECRUTADORANUM,
+                weight = columnWidths[6],
+                isHeader = true
+            )
+        }//Table Headers
 
         Box(modifier = Modifier.weight(1f)) {
             if (isLoading) {
@@ -390,7 +415,7 @@ fun MonthSales() {
 
 @Composable
 fun DataTable(data: List<MonthSalesRowData>) {
-    val columnWidths = listOf(150.dp, 200.dp, 150.dp, 200.dp,150.dp, 150.dp)
+    val columnWidths = listOf(200.dp, 200.dp, 200.dp, 200.dp, 200.dp, 200.dp, 200.dp)
 
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
         items(data) { rowData ->
@@ -405,6 +430,7 @@ fun DataTable(data: List<MonthSalesRowData>) {
                 TableCell(text = rowData.ValorVenda_PVP, weight = columnWidths[3])
                 TableCell(text = rowData.ValorVenda_Liquido, weight = columnWidths[4])
                 TableCell(text = rowData.Recrutadora, weight = columnWidths[5])
+                TableCell(text = rowData.RecrutadoraNum, weight = columnWidths[6])
             }
         }
     }

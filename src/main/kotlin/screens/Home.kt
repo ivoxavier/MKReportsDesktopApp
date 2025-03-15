@@ -73,7 +73,7 @@ fun HomeScreen() {
                 val buttonTitles = listOf(
                     MKReportsConstants.BUTTONS.MONTH_SALES,
                     MKReportsConstants.BUTTONS.PROGRAMS,
-                    MKReportsConstants.BUTTONS.TEAM_STATUS, "Configurações",
+                    MKReportsConstants.BUTTONS.CONSULTANTS, "Configurações",
                     "Opçao1",
                     "Opção 7", "Opção 8", "Opção 9"
                 )
@@ -94,6 +94,10 @@ fun HomeScreen() {
                                 }
                                 MKReportsConstants.BUTTONS.PROGRAMS -> {
                                     currentScreen = ScreenState.PROGRAMS
+                                }
+                                MKReportsConstants.BUTTONS.CONSULTANTS -> {
+                                    newWindowTitle = MKReportsConstants.BUTTONS.CONSULTANTS
+                                    showNewWindow = true
                                 }
 
 
@@ -122,6 +126,7 @@ fun HomeScreen() {
             state = WindowState(size = windowSize) ){
             when(newWindowTitle){
                 MKReportsConstants.REPORTS.MONTH_SALES -> MonthSales()
+                MKReportsConstants.REPORTS.CONSULTANTS -> Consultants()
             }
         }
     }
